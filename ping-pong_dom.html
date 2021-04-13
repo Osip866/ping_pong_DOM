@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .picture {
+        width: 100%;
+        height: 100%;
+        background-image: url(tenis.jpg);
+        margin: 0;
+        padding: 0;
+    }
+
+    .boun {
+        width: 100%;
+        height: 100%;
+        background-image: url(bounce.png);
+        background-position-x: -2px;
+        background-position-y: -2px;
+        box-shadow: 3px 4px 11px #070707;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<body>
+
+    <script>
+        // создаем переменные
+        var xPos = 375;                 //начальная позиция по х
+        var yPos = 160;                 //начальная позиция по Y
+        var topRacketLeft = 10;         //позиция левой ракетки относительно верхнего края
+        var topRacketRight = 10;        //позиция правой ракетки относительно верхнего края
+        var scoreLeft = 0;              //начальный счет
+        var scoreRight = 0;             //начальный счет
+        var speedX = 2;                 //начальная скорость по х
+        var speedY = 1;                 //начальная скорость по y
+        var fieldWidth = 794;           //ширина игрового поля
+        var fieldHeight = 400;          //высота игрового поля
+        var racketWidth = 15;           //ширина ракетки
+        var racketHeigt = 100;          //высота ракетки
+        var bounceWidth = 50;           //ширина мячика
+        var bounseHeight = 50;          //высота мячика
+
+        // создаем div всей игры
+        var game = document.createElement("div");
+        game.style.width = 800 + "px";
+        game.style.height = 450 + "px";
+        game.style.background = "#ddf3dd";
+        document.body.appendChild(game);
+
+        // создаем кнопку старт
+        var btn = document.createElement("button");
+        var start = document.createTextNode("старт!");
+        btn.style.position = "absolute";
+        btn.style.top = 20 + "px";
+        btn.style.left = 25 + "px";
+        btn.style.boxShadow = "3px 3px 7px black";
+        btn.appendChild(start);
+        game.appendChild(btn);
+
+        // создаем счет игры
+        var score = document.createElement("span");
+        var text = document.createTextNode(scoreLeft + ":" + scoreRight);
+        score.style.fontSize = 40 + "px";
+        score.style.position = "absolute";
+        score.style.left = 380 + "px";
+        score.appendChild(text);
+        game.appendChild(score);
+
+        // создаем игровое поле
+        var field = document.createElement("div");
+        field.style.width = fieldWidth + "px";
+        field.style.height = fieldHeight + "px";
+        field.className = "picture";
+        field.style.position = "relative";
+        field.style.top = 50 + "px";
+        field.style.border = "3px solid black";
+        game.appendChild(field);
+
+        //cоздаем левую ракетку
+        var leftRacket = document.createElement("div");
+        leftRacket.style.width = racketWidth + "px";
+        leftRacket.style.height = racketHeigt + "px";
+        leftRacket.style.top = topRacketLeft + "px";
+        leftRacket.style.backgroundColor = "green";
+        leftRacket.style.position = "absolute";
+        field.appendChild(leftRacket);
+
+        //cоздаем правую ракетку
+        var rightRacket = document.createElement("div");
+        rightRacket.style.left = 779 + "px";
+        rightRacket.style.top = topRacketRight + "px";
+        rightRacket.style.width = racketWidth + "px";
+        rightRacket.style.height = racketHeigt + "px";
+        rightRacket.style.backgroundColor = "blue";
+        rightRacket.style.position = "absolute";
+        rightRacket.id = "right";
+        field.appendChild(rightRacket);
+
+        //создаем мяч
+        var bounce = document.createElement("div");
+        bounce.style.position = "absolute";
+        bounce.style.left = xPos + "px";
+        bounce.style.top = yPos + "px";
+        bounce.style.width = bounceWidth + "px";
+        bounce.style.height = bounseHeight + "px";
+        bounce.style.borderRadius = 25 + "px";
+        bounce.className = "boun";
+        bounce.id = "ball";
+        field.appendChild(bounce);
+
+        // создаем текстовую строку "Обратный отсчет"
+        var countdown = document.createElement("div");
+        var number = document.createTextNode("");
+        countdown.style.position = "absolute";
+        countdown.style.top = -40 + "px";
+        countdown.style.left = 500 + "px";
+        countdown.style.fontSize = 25 + "px";
+        countdown.appendChild(number);
+        field.appendChild(countdown);
+
+        // создаем текстовую строку "Победитель"
+        var win = document.createElement("div");
+        var text2 = document.createTextNode("");
+        win.style.position = "absolute";
+        win.style.top = -62 + "px";
+        win.style.left = 149 + "px";
+        win.style.fontSize = 50 + "px";
+        win.style.color = "#ddf3dd";
+        win.appendChild(text2);
+        field.appendChild(win);
+
+        var tickId;
+        var accselerationId;
+        var timerId;
+
+        //по нажатию на кнопку старт запускается функция.
+        var start = function start() {
+            clickSoundInit()
+            xPos = 375;
+            yPos = 160;
+            speedY = Math.floor(((Math.random() * 5) < 2.5) ? -1 : 1) * (Math.random() * 5);
+            speedX = ((Math.random() < 0.5) ? -1 : 1) * speedX;
+            tickId = setInterval(tick, 1000 / 65);
+            accselerationId = setInterval(accseleration, 5000);
+        };
+
+        btn.addEventListener("click", start);
+
+        // создаем обратный отсчет
+        var num = 4;
+        function timer() {
+            tickT()
+            num--;
+            countdown.style.color = "black";
+            countdown.textContent = ("Игра начнется через " + num + " c");
+            if (num == 0) {
+                countdown.style.color = "#ddf3dd";
+                start();
+                timerId = clearInterval(timerId);
+                num = 4;
+            }
+        }
+
+        // функция ускорения мяча
+        function accseleration() {
+            if (speedX > 0) {
+                speedX++;
+            } else if (speedX < 0) {
+                speedX--;
+            }
+        };
+
+        //функция обновления
+        function restart() {
+            clearInterval(tickId);
+            clearInterval(accselerationId);
+            speedX = 2;
+            timerId = setInterval(timer, 1000);
+        };
+        //функция остановки игры и вывода информации о победителе
+        function stop() {
+            var color;
+            if (scoreRight == 5) {
+                color = "синяя";
+            } else {
+                color = "зеленая";
+            };
+            clearInterval(tickId);
+            clearInterval(accselerationId);
+            clearInterval(timerId);
+            score.style.color = "#ddf3dd";
+            win.style.color = "black";
+            win.textContent = ("Победила " + color + " ракетка");
+            clickW()
+        };
+
+        //создаем основную функцию по работе игры
+        function tick() {
+
+            xPos += speedX;
+            // вылетел ли мяч правее стены?
+            if (xPos + 50 > fieldWidth) {
+                speedX = -speedX;
+                xPos = fieldWidth - 50;
+                scoreLeft += 1;
+                text.textContent = (scoreLeft + ":" + scoreRight);
+                clickG();
+                restart();
+            }
+            // вылетел ли мяч левее стены?
+            if (xPos < 0) {
+                speedX = -speedX;
+                xPos = 0;
+                scoreRight += 1;
+                text.textContent = (scoreLeft + ":" + scoreRight);
+                clickG();
+                restart();
+            }
+            // если счет достиг 5 очков то конец игры
+            if (scoreLeft == 5 || scoreRight == 5) {
+                stop();
+            };
+
+            yPos += speedY;
+            // вылетел ли мяч ниже пола?
+            if (yPos + 50 > fieldHeight) {
+                speedY = -speedY;
+                yPos = fieldHeight - 50;
+            }
+            // вылетел ли мяч выше потолка?
+            if (yPos < 0) {
+                speedY = -speedY;
+                yPos = 0;
+            }
+            // ballH.update();
+            bounce.style.left = xPos + "px";
+            bounce.style.top = yPos + "px";
+
+            //Варианты, когда шарик соприкасается с ракетками
+            // правая ракетка
+            if (xPos + bounceWidth > fieldWidth - racketWidth && yPos + bounseHeight / 2 > topRacketRight && yPos + bounseHeight / 2 < topRacketRight + racketHeigt) {
+                speedX = -speedX;
+                clickSound()
+            };
+            // левая ракетка
+            if (xPos < racketWidth && yPos + bounseHeight / 2 > topRacketLeft && yPos + bounseHeight / 2 < topRacketLeft + racketHeigt) {
+                speedX = -speedX;
+                clickSound()
+            };
+
+            // передвижение ракеток в зависимости от нажатых клавиш
+            if (pressKeys[40] && topRacketRight <= 296) {
+                topRacketRight += 4;
+                rightRacket.style.top = topRacketRight + "px";
+            }
+            if (pressKeys[38] && topRacketRight > 5) {
+                topRacketRight -= 4;
+                rightRacket.style.top = topRacketRight + "px";
+            }
+            if (pressKeys[17] && topRacketLeft <= 295) {
+                topRacketLeft += 4;
+                leftRacket.style.top = topRacketLeft + "px";
+            }
+            if (pressKeys[16] && topRacketLeft > 5) {
+                topRacketLeft -= 4;
+                leftRacket.style.top = topRacketLeft + "px";
+            }
+        };
+
+        // создаем функцию перемещения ракетки
+        var pressKeys = {};
+
+        addEventListener("keydown", function (event) {
+            if (event.keyCode) {
+                pressKeys[event.keyCode] = true;
+            }
+        });
+
+        addEventListener("keyup", function (event) {
+            if (event.keyCode) {
+                pressKeys[event.keyCode] = false;
+            }
+        });
+
+        var clickAudio=new Audio(src = "7d16460388c9ccb.mp3" );
+        var clickGoal = new Audio(src = "2a7edeb4fc789f5.mp3");
+        var clickWin = new Audio(src = "1984a9f3474ab6d.mp3");
+        var tickTack = new Audio(src = "e61cdb72dc8aa8c.mp3")
+        
+        function clickSoundInit() {
+            clickAudio.play(); // запускаем звук
+            clickAudio.pause(); // и сразу останавливаем
+        }
+        function clickSound() {
+            clickAudio.currentTime = 0; // в секундах
+            clickAudio.play();
+        }
+        function clickG(){
+            clickGoal.currentTime = 0;
+            clickGoal.play();
+        }
+        function clickW(){
+            clickWin.currentTime = 0;
+            clickWin.play();
+        }
+        function tickT(){
+            tickTack.currentTime = 0;
+            tickTack.play();
+        }
+    </script>
+</body>
+
+</html>
